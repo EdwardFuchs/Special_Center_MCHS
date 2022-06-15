@@ -1,0 +1,118 @@
+{% extends 'testing/base.html' %}
+
+{% block title %}Тестирование{% endblock %}
+
+{% block content %}
+
+    <header class="p-3 bg-dark text-white">
+    <div class="container">
+      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+          {% if user.is_authenticated %}
+            <form action="/logout">
+                <input  type="submit" class="btn btn-warning" value="Выйти">
+            </form>
+          {% else %}
+            <form action="/login">
+                <input  type="submit" class="btn btn-outline-light me-2" value="Войти">
+            </form>
+            <form action="/register">
+                <input  type="submit" class="btn btn-warning" value="Регистрация">
+            </form>
+          {% if user.is_superuser %}
+              <form action="/admin">
+                <input  type="submit" class="btn btn-outline-light me-2" value="Админ панель">
+              </form>
+          {% endif %}
+          {% endif %}
+      </div>
+    </div>
+  </header>
+
+{% if request.user.is_authenticated %}
+{#    <div><p>Создать веб страницу (Django) с формой заполнения.</p>#}
+{#    <p>- Название проверки</p>#}
+{#    <p>- оценка</p>#}
+{#    <p>- основные недостатки</p>#}
+{#    <p>- план устранения недостатков (файл)</p>#}
+{#    <p>- Сотрудники привлечённые (фио, должность, наказание ) сотрудников может быть много, может один. Тут нужна возможность добавления/удаления (+-)</p>#}
+{#    <p>- дополнительные файлы (так же как сотрудники, может быть много, может одни)</p>#}
+{##}
+{#    <p>Форма состоит из трёх моделей (основная, люди, файлы)</p>#}
+{#    <p>Тут нужно использовать Django Formset (-)</p>#}
+{#    </div>#}
+    <div class="container px-5 my-5">
+        {{ error }}
+        <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+            {{ form.as_p }}
+            <label>Файлы:</label>
+            {{ files_formset.management_form }}
+            <div class="file-form-list" id="file-form-list">
+                {% for form in files_formset %}
+                    <div class="file-form">
+
+
+                        <div class="used_form">
+                            <a href={{ form.path }}>{{ form.name }}</a>
+                            {{ form.as_p }}
+                            <button class="btn btn-danger me-md-2 del" type="button">Удалтить</button>
+                            <p></p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="empty-form-file" class="d-none">
+                {{ files_formset.empty_form.as_p }}
+                <button class="btn btn-danger me-md-2 del" type="button">Удалтить</button>
+                <p></p>
+            </div>
+            <button id="add-more-files" type="button" class="btn btn-secondary form-control">Добавить файл</button>
+        <p></p>
+        <input type="submit" value="Отправить" class="form-control">
+{#            <button type="submit"  value="Submit" class="btn btn-primary form-control">Отправить</button>#}
+    </form>
+    </div>
+    <script>
+    const addMoreFilesBtn = document.getElementById("add-more-files")
+    const tototalNewFileforms = document.getElementById("id_form-TOTAL_FORMS")
+
+    addMoreFilesBtn.addEventListener("click", add_new_file_form)
+    function add_new_file_form(event) {
+        if (event){
+            event.preventDefault()
+        }
+        const currentFileForms = document.getElementsByClassName("file-form")
+        const currentFormFileCount = currentFileForms.length //+ 1
+        const formFileCopyTarget = document.getElementById("file-form-list")
+        const copyEmptyFormFileEl = document.getElementById("empty-form-file").cloneNode(true)
+        copyEmptyFormFileEl.setAttribute("class", "file-form")
+        copyEmptyFormFileEl.setAttribute("id", `form-${currentFormFileCount}`)
+        const regex = new RegExp("__prefix__", "g")
+        copyEmptyFormFileEl.innerHTML = copyEmptyFormFileEl.innerHTML.replace(regex, currentFormFileCount)
+        tototalNewFileforms.setAttribute("value", currentFormFileCount + 1)
+        formFileCopyTarget.append(copyEmptyFormFileEl)
+    }
+    </script>
+    <script>
+    function remove(event){
+        const child = event.target.parentNode.parentNode
+        child.parentNode.removeChild(child)
+}
+    function update_buttons_remove(){
+        Array.from(document.querySelectorAll('.del')).forEach(b => b.addEventListener('click', remove));
+    }
+    update_buttons_remove()
+    </script>
+{% else %}
+    <p></p>
+    <div class="container">
+    <div class="row">
+        <div class="col-lg-12 text-center">
+            <h1>Ошибка 401</h1>
+            <h1>Требуется авторизация</h1>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

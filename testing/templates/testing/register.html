@@ -1,0 +1,25 @@
+{% extends 'testing/base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+
+{% load crispy_forms_tags %}
+
+<!--Register-->
+<div class="container py-5">
+	<h1>Регистрация</h1>
+      {% if error  %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+      {% endif %}
+	<form method="POST">
+		{% csrf_token %}
+		{{ register_form|crispy }}
+		<button class="btn btn-primary" type="submit">Регистрация</button>
+	</form>
+	<p class="text-center">У вас уже есть аккаунт?, <a href="/login">Войти</a> instead.</p>
+</div>
+
+{% endblock %}
