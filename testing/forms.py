@@ -27,13 +27,13 @@ class TestForm(ModelForm):
             # "files": "Дополнительные файлы",
             "punishment": "Наказание",
         }
-
-
-class FilesFormSet(FileModel):
-    def __init__(self, *args, **kwargs):
-        super(FileModel, self).__init__(*args, **kwargs)
-        self.queryset = FileModel.objects.none()
-        self.label_suffix = ""
+#
+#
+# class FilesFormSet(FileModel):
+#     def __init__(self, *args, **kwargs):
+#         super(FileModel, self).__init__(*args, **kwargs)
+#         self.queryset = FileModel.objects.none()
+#         self.label_suffix = ""
 # username = "TestUser"
 # password = "TestUser"*2
 # middleName = "Витальевич"
