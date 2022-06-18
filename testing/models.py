@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import User
 from time import time as current_time
-from .choices import SCORE, RANK
+from .choices import SCORE, RANK, PUNISHMENT
 from uuid import uuid4
 
 
@@ -30,6 +30,17 @@ class Profile(models.Model):
     class Meta:
         verbose_name = "Профиль"
         verbose_name_plural = "Профили"
+
+
+# class Employee(models.Model):
+#     fio = models.CharField("ФИО", max_length=150)
+#     rank = models.CharField(
+#         "Должность",
+#         max_length=2,
+#         choices=RANK,
+#         default="u",
+#     )
+#
 
 
 class TestModel(models.Model):
@@ -62,8 +73,13 @@ class FileModel(models.Model):
 
 class PunishmentModel(models.Model):
     test = models.ForeignKey(TestModel, on_delete=models.CASCADE)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name="Профиль")
-    punishment = models.CharField("Наказание", max_length=300)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name="Сотрудник")
+    punishment = models.CharField(
+        "Наказание",
+        max_length=8,
+        choices=PUNISHMENT,
+        default="type0",
+    )
 
     def __str__(self):
         return ""

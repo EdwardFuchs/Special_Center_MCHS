@@ -44,19 +44,17 @@
         <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
             {{ form.as_p }}
+{#Файлы#}
             <label>Файлы:</label>
             {{ files_formset.management_form }}
             <div class="file-form-list" id="file-form-list">
+                <button id="add-more" type="button" class="btn btn-secondary form-control add-more">Добавить файл</button>
                 {% for form in files_formset %}
-                    <div class="file-form" id="form-{{ forloop.counter0 }}">
-
-
-{#                        <div class="used_form">#}
+                    <div class="file-form" id="file-form-{{ forloop.counter0 }}">
                             <a href={{ form.path }}>{{ form.name }}</a>
                             {{ form.as_p }}
                             <button class="btn btn-danger me-md-2 del" type="button">Удалтить</button>
                             <p></p>
-{#                        </div>#}
                     </div>
                 {% endfor %}
             </div>
@@ -65,59 +63,91 @@
                 <button class="btn btn-danger me-md-2 del" type="button">Удалтить</button>
                 <p></p>
             </div>
-            <button id="add-more-files" type="button" class="btn btn-secondary form-control">Добавить файл</button>
+
         <p></p>
+
+
+
+{#Наказания#}
+        <label>Привлеченные сотрудники:</label>
+{#        {{ punishment_formset.as_p }}#}
+        {{ punishment_formset.management_form }}
+         <div class="punishment-form-list" id="punishment-form-list">
+            <button id="add-more" type="button" class="btn btn-secondary form-control add-more">Добавить наказание</button>
+             {% for form in punishment_formset %}
+                <div class="punishment-form" id="form-{{ forloop.counter0 }}">
+                    {{ form.as_p }}
+                    <button class="btn btn-danger me-md-2 del" type="button">Удалтить</button>
+                    <p></p>
+                </div>
+             {% endfor %}
+         </div>
+         <div id="empty-form-punishment" class="d-none">
+            {{ punishment_formset.empty_form.as_p }}
+            <button class="btn btn-danger me-md-2 del" type="button">Удалтить</button>
+            <p></p>
+         </div>
+
+        <p></p>
+
+
+
         <input type="submit" value="Отправить" class="form-control">
 {#            <button type="submit"  value="Submit" class="btn btn-primary form-control">Отправить</button>#}
     </form>
     </div>
     <script>
-    const addMoreFilesBtn = document.getElementById("add-more-files")
-    const tototalNewFileforms = document.getElementById("id_form-TOTAL_FORMS")
-
-    addMoreFilesBtn.addEventListener("click", add_new_file_form)
-    function add_new_file_form(event) {
-        if (event){
-            event.preventDefault()
+    const addMoreBtns = document.getElementsByClassName("add-more")
+    for(let i = 0; i < addMoreBtns.length; i++) {
+        addMoreBtns[i].addEventListener("click", add_new_file_form)
+        function add_new_file_form(event) {
+            if (event){
+                event.preventDefault()
+            }
+            const typeForm = event.target.parentNode.id.slice(0, -10)
+            const currentForms = document.getElementsByClassName(`${typeForm}-form`)
+            const currentFormCount = currentForms.length //+ 1
+            const formFileCopyTarget = document.getElementById(`${typeForm}-form-list`)
+            const copyEmptyFormFileEl = document.getElementById(`empty-form-${typeForm}`).cloneNode(true)
+            copyEmptyFormFileEl.setAttribute("class", `${typeForm}-form`)
+            copyEmptyFormFileEl.setAttribute("id", `${typeForm}-form-${currentFormCount}`)
+            const regex = new RegExp("__prefix__", "g")
+            copyEmptyFormFileEl.innerHTML = copyEmptyFormFileEl.innerHTML.replace(regex, currentFormCount)
+            {#const tototalNewFileforms = document.getElementById(`id_file-TOTAL_FORMS`)#}
+            {#tototalNewFileforms.setAttribute("value", (currentFormFileCount + 1).toString())#}
+            document.getElementById(`id_${typeForm}-TOTAL_FORMS`).setAttribute("value", (currentFormCount + 1).toString())
+            formFileCopyTarget.append(copyEmptyFormFileEl)
+            update_buttons_remove()
+            console.log(currentFormCount+1)
         }
-        const currentFileForms = document.getElementsByClassName("file-form")
-        const currentFormFileCount = currentFileForms.length //+ 1
-        const formFileCopyTarget = document.getElementById("file-form-list")
-        const copyEmptyFormFileEl = document.getElementById("empty-form-file").cloneNode(true)
-        copyEmptyFormFileEl.setAttribute("class", "file-form")
-        copyEmptyFormFileEl.setAttribute("id", `form-${currentFormFileCount}`)
-        const regex = new RegExp("__prefix__", "g")
-        copyEmptyFormFileEl.innerHTML = copyEmptyFormFileEl.innerHTML.replace(regex, currentFormFileCount)
-        tototalNewFileforms.setAttribute("value", (currentFormFileCount + 1).toString())
-        formFileCopyTarget.append(copyEmptyFormFileEl)
-        update_buttons_remove()
-        console.log(currentFormFileCount+1)
     }
 
     function remove(event){
-        const currentFileForms = document.getElementsByClassName("file-form")
-        const currentFormFileCount = currentFileForms.length
+        const typeForm = event.target.parentNode.className.slice(0, -5)  {# Тип формы file или punishment #}
+        const currentForms = document.getElementsByClassName(`${typeForm}-form`)
+        const currentFormCount = currentForms.length
         const child = event.target.parentNode
-        const value_input = document.getElementById(`id_${child.id}-id`)
-        console.log(`id_${child.id}-id`)
-        console.log(value_input)
-        if (value_input.value>0){
+        const formId = child.id.slice(-1)
+        const value_input = document.getElementById(`id_${typeForm}-${formId}-id`)
+        {#console.log(`id_${typeForm}-${formId}-id`)#}
+        {#console.log(`value_input = ${value_input.value}`)#}
+        if (value_input && value_input.value>0){
             child.style.display = "none"
             value_input.value *= -1
         } else {
-            const element_id = Number(child.id.substr(5))
-            for (var el_id = element_id + 1; el_id < currentFormFileCount; el_id++) {
-                document.getElementById(`form-${el_id}`).setAttribute("id", `form-${el_id - 1}`)
-                document.querySelector(`label[for=id_form-${el_id}-file]`).setAttribute("for", `id_form-${el_id - 1}-file`)
-                var el = document.getElementById(`id_form-${el_id}-file`)
-                el.setAttribute("id", `id_form-${el_id - 1}-file`)
-                el.setAttribute("name", `form-${el_id - 1}-file`)
-                el = document.getElementById(`id_form-${el_id}-id`)
-                el.setAttribute("id", `id_form-${el_id - 1}-id`)
-                el.setAttribute("name", `form-${el_id - 1}-id`)
+            for (let el_id = Number(formId) + 1; el_id < currentFormCount; el_id++) {
+                document.getElementById(`${typeForm}-form-${el_id}`).setAttribute("id", `${typeForm}-form-${el_id - 1}`)
+                document.querySelector(`label[for=id_${typeForm}-${el_id}-file]`).setAttribute("for", `id_${typeForm}-${el_id - 1}-file`)
+                let el = document.getElementById(`id_${typeForm}-${el_id}-file`)
+                el.setAttribute("id", `id_${typeForm}-${el_id - 1}-file`)
+                el.setAttribute("name", `${typeForm}-${el_id - 1}-file`)
+                el = document.getElementById(`id_${typeForm}-${el_id}-id`)
+                el.setAttribute("id", `id_${typeForm}-${el_id - 1}-id`)
+                el.setAttribute("name", `${typeForm}-${el_id - 1}-id`)
             }
             child.parentNode.removeChild(child)
-            tototalNewFileforms.setAttribute("value", (currentFormFileCount - 1).toString())
+            {#tototalNewFileforms.setAttribute("value", (currentFormCount - 1).toString())#}
+            document.getElementById(`id_${typeForm}-TOTAL_FORMS`).setAttribute("value", (currentFormCount - 1).toString())
         }
 }
     function update_buttons_remove(){
